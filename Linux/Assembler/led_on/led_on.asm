@@ -1,14 +1,15 @@
 ; name:        led_on.asm
 ; assemble:    avra led_on.asm
 ; flash:       avrdude -F -V -c arduino -p ATMEGA328P -P /dev/ttyACM0 -b 115200 -U flash:w:led_on.hex
-; description: turns led on port 13 on.
-;              this is an example from https://www.instructables.com/Command-Line-Assembly-Language-Programming-for-Ard/
-;              slightly modified for my own needs and coding style.
-;              It turns on the LED which is connected to PB5 (digital out 13).
+; description: It turns off the LED which is connected to PB5 (digital out 13).
+; source:      http://www.rjhcoding.com/avr-asm-tutorials.php
 
 .nolist
 .include "./m328Pdef.inc"
 .list
+
+.cseg
+.org 	0x00
 
 start:
     ldi      r16,0xFF ; r16 = 0xFF (255)

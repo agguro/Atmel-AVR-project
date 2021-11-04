@@ -1,10 +1,3 @@
-;
-; TestAssemblerApp.asm
-;
-; Created: 31/10/2021 15:42:17
-; Author : aguas
-;
-
 init:
 call serial_init
 start:
@@ -36,6 +29,7 @@ ldi r16,(1<<4)|(1<<3)  ;enable receiver and transmitter
 sts 0xc1, r16
 ldi r16,0b00001110  ;set frame format to async, no parity, 8 data bits and 1 stop bit
 sts 0xc2,r16
+ret
 
 ;transmit byte stored in r19 over serial
 serial_transmit:
