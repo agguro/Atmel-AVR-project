@@ -1,22 +1,18 @@
-; name:        led_off.asm
-; assemble:    avra led_off.asm
-; flash:       avrdude -F -V -c arduino -p ATMEGA328P -P /dev/ttyACM0 -b 115200 -U flash:w:led_off.hex
-; description: turns led on port 13 on.
-;              It turns off the LED which is connected to PB5 (digital out 13).
-; source:      http://www.rjhcoding.com/avr-asm-tutorials.php
-
-.nolist
-.include "./m328Pdef.inc"
-.list
+;name:            led_off.asm
+;assemble:        avra led_off.asm
+;flash:           avrdude -F -V -c arduino -p ATMEGA328P -P /dev/ttyACM0 -b 115200 -U flash:w:led_off.hex
+;description:     Turns off the LED which is connected to PB5 (digital out 13).
+;inspir(at)ed by: http://www.rjhcoding.com/avr-asm-led-blink.php
+;nov 5, 2021 - agguro - no-license license
 
 .cseg
 .org 	0x00
 
 start:
-    ldi      r16,0xFF ; r16 = 0xFF (255)
-    out      DDRB,r16 ; Out writes to SRAM, which is one way of accessing pins. DDRB controls PORTB's in/out state.
-    ldi      r16,0x00 ; r16 is where we'll store current LED state, 0x00 means all pins low.
-    out      PORTB,r16 ; set all B pins to current state. PORTB is where our favorite flashing pin is (pin 13)!
+    ldi      r16,0b00100000 ; r16 = 0x20 PB5 as output
+    out      0x04,r16       ; r16 to DDRB (0x04) controls PORTB's in/out state.
+    ldi      r16,0b00000000 ; r16 = 0x00 set PB5 low (the famous pin 13 on Arduino Uno Rev3)
+    out      0x05,r16       ; set PORTB with values from r16, pin 13 = low
 
 loop:
     rjmp     loop
