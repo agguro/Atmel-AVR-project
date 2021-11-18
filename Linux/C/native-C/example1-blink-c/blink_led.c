@@ -1,20 +1,13 @@
-/*
- * compile:
- * avr-gcc -Os -DF_CPU=16000000UL -mmcu=atmega328p -c -o blink-led.o blink-led.c
- * link:
- * avr-gcc -mmcu=atmega328p blink_led.o blink_led
- * make eeprom code:
- * avr-objcopy -O ihex -R .eeprom blink_led blink_led.hex
- * flash Arduino Uno rev 3
- * avrdude -F -V -c arduino -p ATMEGA328P -P /dev/ttyACM0 -b 115200 -U flash:w:blink_led.hex
- */
-
 #include <avr/io.h>
 #include <util/delay.h>
 
 #define MS_DELAY 3000
 
 int main (void) {
+    // for disassembly purposes only
+    _delay_ms(1);           // 1 msec delay
+    _delay_us(1);           // 1 microsec delay
+    
     /*Set to one the fifth bit of DDRB to one
     **Set digital pin 13 to output mode */
     DDRB |= _BV(DDB5);

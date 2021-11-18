@@ -1,22 +1,21 @@
 ;name:            led_onoff.asm
 ;assemble:        avra led_onoff.asm
-;flash:           avrdude -p m328p -c stk500v1 -b 57600 -P /dev/ttyACM0 -U flash:w:led_onoff.hex
+;flash:           avrdude -c arduino -p m328p -P /dev/ttyACM0 -b 115200 -U flash:w:led_onoff.hex
 ;description:     Turns the LED at PB5 (digital out 13) on and after a delay of 2 seconds off again.
 ;inspir(at)ed by: http://www.rjhcoding.com/avr-asm-led-blink.php
 ;nov 5, 2021 - agguro - no-license license
 
+.device ATmega328P
 .cseg
-.org	0x00
+.org 0x00
 
 start:
-    ldi      r16,0b00100000 ;r16 = 0x20 PB5 as output
-    out      0x04,r16       ;r16 to DDRB (0x04) controls PORTB's in/out state.
+    ldi     r16,0b00100000 ;r16 = 0x20 PB5 as output
+    out     0x04,r16       ;r16 to DDRB (0x04) controls PORTB's in/out state.
     ;we can re-use the value 00100000 in r16 so
     ;turn led ON
-    out      0x05,r16       ;set PORTB with values from r16, pin 13 = high    
-    ;wait 2 secs
-    call    delay
-
+    out     0x05,r16       ;set PORTB with values from r16, pin 13 = high    
+    call    delay           ;wait 1 secs
     ;turn led OFF
     ldi     r16,0b00000000  ;r16 = 0b00000000
     out     0x05,r16        ;set PORTB with values from r16, pin 13 = low
