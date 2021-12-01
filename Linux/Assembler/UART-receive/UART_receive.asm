@@ -10,17 +10,26 @@
 ;inspir(at)ed from: http://www.rjhcoding.com/avr-asm-uart.php
 ;nov 5, 2021 - agguro - no-license license
 
-.include "../../Include/m328Pdef.inc"
-
-.dseg
-.org 0x100
-name:       .byte 255
-
-.cseg
-.org 0x00
+.include "./m328Pdef.inc"
 
 .equ    baud = 9600
 .equ    bps  = 16000000/16/baud-1
+
+; RAM data variables
+.dseg
+.org SRAM_START
+char1:       .byte 1
+char2:       .byte 1
+eol:        .byte 1
+
+;EEPROM data variables
+.eseg
+.org 0x01       ;should never point to first location
+epromvar:   .db     "E","E","P","R","O","M", 0x0a    ;just a test value
+
+
+.cseg
+.org 0x00
 
 start:
 
@@ -28,36 +37,64 @@ start:
     ldi     r17,HIGH(bps)                   ;into r17:r16
     call    UART_init
 
+loop:
+    ldi     r16,LOW(
+    lds     r16,epromvar
+    call    UART_putc
+    
+    rjmp loop
+    
     ;send message so user knows when to start
     ldi     ZL,LOW(2*hello)
     ldi     ZH,HIGH(2*hello)
     call    UART_puts
     
     ;wait for a keypress
-    call    UART_getc
+    ;call    UART_getc
+    ldi     ZL,LOW(2*char1)
+    ldi     ZH,HIGH(2*char1)
+    call    UART_gets
+   
+;    sts     char1,r16
+;    call    UART_getc
+;    sts     char2,r16
+    
+    ldi     r16,0x0a
+    sts     eol,r16
+
+    lds     r16,char1
+    call    UART_putc
+    lds     r16,eol
+    call    UART_putc
+    lds     r16,char2
+    call    UART_putc
+    lds     r16,eol
+    call    UART_putc
+        
+    
+    rjmp    loop
+    
     ;we don't have to check, any key will do
     
-    ldi     ZL,LOW(2*question)
-    ldi     ZH,HIGH(2*question)
-    call    UART_puts
+;    ldi     ZL,LOW(2*question)
+;    ldi     ZH,HIGH(2*question)
+;    call    UART_puts
     
-    ldi     ZL,LOW(2*name)
-    ldi     ZH,HIGH(2*name)
-    call    UART_gets
+;    ldi     ZL,LOW(2*name)
+;    ldi     ZH,HIGH(2*name)
+;    call    UART_gets
     
     ;say bye bye
-    ldi     ZL,LOW(2*bye)
-    ldi     ZH,HIGH(2*bye)                   ;into r17:r16
-    call    UART_puts
+;    ldi     ZL,LOW(2*bye)
+;    ldi     ZH,HIGH(2*bye)                   ;into r17:r16
+;    call    UART_puts
     
     ;and print the response
-    ldi     ZL,LOW(2*name)
-    ldi     ZH,HIGH(2*name)                   ;into r17:r16
-    call    UART_puts
-    
-    
-loop:
-    rjmp loop
+;    ldi     ZL,LOW(2*name)
+;    ldi     ZH,HIGH(2*name)                   ;into r17:r16
+;    call    UART_puts
+        
+;    rjmp loop
 
 ;initialize UART with LOW(bps) in r16 and HIGH(bps) in r17.
 ;bps = cpuFrequency/16/baud-1
