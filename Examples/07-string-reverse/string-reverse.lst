@@ -1,0 +1,81 @@
+
+AVRA   Ver. 1.3.0 string-reverse.asm Wed Dec  8 16:44:08 2021
+
+
+         ;name:            string_reverse.asm
+         ;assemble:        avra string_reverse.asm
+         ;flash:           avrdude -c arduino -p m328p -P /dev/ttyACM0 -b 115200 -U flash:w:string_reverse.hex
+         ;description:     read a string from the UART and reverse writes it to the UART
+         ;monitor:         stty -F /dev/ttyACM0 9600 raw -clocal -echo
+         ;                 cat /dev/ttyACM0
+         ;inspir(at)ed from: http://www.rjhcoding.com/avr-asm-uart.php
+         ;nov 5, 2021 - agguro - no-license license
+         
+          .device ATmega328P
+         
+          .equ    baud = 9600
+          .equ    bps  = 1000000/baud-1
+         
+          .cseg
+          .org 0x00
+         
+          start:
+C:000000 e607          ldi     r16,LOW(bps)                    ;load baud prescale
+C:000001 e010          ldi     r17,HIGH(bps)                   ;into r17:r16
+C:000002 940e 0017     call    UART_init
+         
+          loop1:
+C:000004 e00a          ldi     r16,0x0a      ;push newline onto the stack
+C:000005 930f          push    r16
+C:000006 e30e          ldi     r16,0x3e      ;print ">"    
+C:000007 940e 0022     call    UART_putc
+             
+          loop2:
+C:000009 940e 0029     call    UART_getc    ;receive a character
+C:00000b 940e 0022     call    UART_putc    ;print character
+C:00000d 300a          cpi     r16,0x0a
+C:00000e f011          breq    input_finished     ;if it's a newline jump to input_finished
+C:00000f 930f          push    r16                ;otherwise push it to the stack
+C:000010 cff8          rjmp    loop2
+         
+          input_finished:
+C:000011 910f          pop     r16                ;remove char from top of stack
+C:000012 940e 0022     call    UART_putc   ;transmit it
+C:000014 300a          cpi     r16,0x0a
+C:000015 f371          breq    loop1             ;if it's a newline, full string has been sent so go back to start
+C:000016 cffa          rjmp    input_finished
+         
+         ;initialize UART with LOW(bps) in r16 and HIGH(bps) in r17.
+         ;bps = cpuFrequency/16/baud-1
+          UART_init:
+C:000017 9300 00c4     sts     0xc4,r16                        ;load baud prescale
+C:000019 9310 00c5     sts     0xc5,r17                        ;to UBRR0
+C:00001b e108          ldi     r16,(1<<0x03)|(1<<0x04)         ;enable transmitter
+C:00001c 9300 00c1     sts     0xc1,r16                        ;and receiver
+C:00001e e00e          ldi     r16,0b00001110                  ;set frame format to async, no parity, 8 data bits and 1 stop bit
+C:00001f 9300 00c2     sts     0xc2,r16
+C:000021 9508          ret
+         
+         ;send a byte in r16 to the UART
+          UART_putc:
+C:000022 9110 00c0     lds     r17,0xc0                        ;load UCSR0A into r17
+C:000024 ff15          sbrs    r17,0x05                        ;wait for empty transmit buffer
+C:000025 cffc          rjmp    UART_putc                       ;repeat loop
+C:000026 9300 00c6     sts     0xc6,r16                        ;transmit character
+C:000028 9508          ret                                     ;return from subroutine
+             
+         ;receives single ASCII character via UART in r16
+          UART_getc:
+C:000029 9110 00c0     lds     r17,0xc0                      ;load UCSR0A into r17
+C:00002b ff17          sbrs    r17,7                           ;receive complete
+C:00002c cffc          rjmp    UART_getc                       ;repeat loop
+C:00002d 9100 00c6     lds     r16,0xc6                        ;get received character
+C:00002f 9508          ret
+
+
+Segment usage:
+   Code      :        48 words (96 bytes)
+   Data      :         0 bytes
+   EEPROM    :         0 bytes
+
+Assembly completed with no errors.
