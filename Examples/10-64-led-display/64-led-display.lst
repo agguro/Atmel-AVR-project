@@ -1,0 +1,289 @@
+
+AVRA   Ver. 1.3.0 64-led-display.asm Thu Dec 16 13:16:54 2021
+
+
+         ;name:          64-led-display.asm
+         ;assemble:      avra 64-led-display.asm
+         ;flash:         avrdude -c arduino -p m328p -P /dev/ttyACM0 -b 115200 -U flash:w:64-led-display.hex
+         ;description:   demonstration on how you can deal with a 64 (8x8) led display.
+         ;remark:        The program include some demos, just to get someone starting somewhere.
+         ;dec 9, 2021 - agguro - no-license license
+         
+         ;This program uses r16 as the row register and r17 as the column register to indicate the leds that
+         ;must put on/off.  A 0-bit indicates to switch a led off for that row/column while a 1-bit indicates to switch a led on for that row/column.
+         ;
+         ;This is a 8x8 led display which means that one should define all the leds that must be put on or off and call the ledMatrix8x8 routine
+         ;for each row or column seperately. (ex. an emoticon will call ledMatrix8x8 8 times (for each row once) in a loop.
+         
+          .device ATmega328P
+         
+          .equ	PORTB	= 0x05
+          .equ	DDRB	= 0x04
+          .equ    PORTC   = 0x08
+          .equ    DDRC    = 0x07
+          .equ    PORTD   = 0x0b
+          .equ    DDRD    = 0x0a
+         
+          .cseg
+          .org 0x00
+         
+          start:
+C:000000 940e 0019     call    ledMatrix8x8Init    ;initialize PORT B,C and D
+             
+          demos:
+         
+         
+C:000002 940e 0057     call    demo0               ;blink display
+C:000004 940e 0043     call    delay
+         
+C:000006 940e 0063     call    demo1               ;led cycle
+C:000008 940e 0043     call    delay
+             
+C:00000a 940e 0072     call    demo2               ;row cycle
+C:00000c 940e 0043     call    delay
+         
+C:00000e 940e 007c     call    demo3               ;column cycle
+C:000010 940e 0043     call    delay
+             
+C:000012 940e 0085     call    demo4               ;display a pattern
+         
+C:000014 940e 0057     call    demo0               ;blink display
+C:000016 940e 0043     call    delay
+             
+          end:
+C:000018 cfe9          rjmp demos
+         
+          ledMatrix8x8Init:
+         ;Initialize Port B,C and D used gates as output.
+C:000019 ef0f          ldi     r16,0b11111111  ;r16 = 0xFF all ports as output
+C:00001a b90a          out     DDRD,r16        ;r16 to DDRD (0x0a) controls PORTD's in/out state.
+C:00001b e30f          ldi     r16,0b00111111  ;r16 = 0xFF all ports as output
+C:00001c b907          out     DDRC,r16        ;r16 to DDRC (0x07) controls PORTD's in/out state.
+C:00001d e003          ldi     r16,0b00000011  ;r16 = 0xFF all ports as output
+C:00001e b904          out     DDRB,r16        ;r16 to DDRB (0x04) controls PORTD's in/out state.
+C:00001f 9508          ret
+         
+         ;ledMatrixRow
+         ;takes the row to light in r16.
+         ;All leds in the columns on the same row will be ligth up.
+          ledMatrix8x8Row:
+C:000020 b90b          out     PORTD,r16       ;r16 to PORTD (0x0b)
+C:000021 e010          ldi     r17,0b00000000  ;r17 = column 2..7 LOW
+C:000022 b918          out     PORTC,r17       ;r17 to PORTC (0x08)
+C:000023 b915          out     PORTB,r17       ;r16 to PORTB (0x05)
+C:000024 9508          ret
+         
+         ;ledMatrix8x8Column
+         ;takes the columnl to ligth in r16.
+         ;All leds in the row on the same column will be ligth up.
+          ledMatrix8x8Column:
+C:000025 ef1f          ldi     r17,0b11111111  ;all rows 0..7 HIGH
+C:000026 b91b          out     PORTD,r17       ;r17 to PORTD (0x0b)
+             ;split register 16 in 6 most significant bit in r18 and
+             ;2 least significant bits in r19
+C:000027 2f20          mov     r18,r16         ;columns in r18
+C:000028 9520          com     r18             ;invert bits
+C:000029 2f32          mov     r19,r18         ;r19 = r18
+C:00002a 9526          lsr     r18             ;shift out right lsbit
+C:00002b 9526          lsr     r18             ;shift out right lsbit
+C:00002c e0a3          ldi     r26,0b00000011  ;mask for two least significant bits in r19
+C:00002d 233a          and     r19,r26         ;mask all bits except bit 0 and 1
+C:00002e b928          out     PORTC,r18       ;r18 to PORTC (0x08)
+C:00002f b935          out     PORTB,r19       ;r16 to PORTB (0x05)
+C:000030 9508          ret
+             
+         ;this routine takes r16 as row register and r17 as column register for
+         ;the 8x8 LED matrix.
+         ;a 0-bit value means disable row/column, while a 1-bit value means:
+         ;activate the row/column. All the LED at the intersection of a row/column = 1
+         ;will light up while the others are extinguished.
+         ;in a scheme it will be more clear (i hope)
+         ;  r16 = rows:     r7  r6  r5  r4  r3  r2  r1  r0
+         ;  r17 = columns:  c7  c6  c5  c4  c3  c2  c1  c0
+         ;
+         ;  The 8x8 led display:
+         ;
+         ;    c0  c1  c2  c3  c4  c5  c6  c7
+         ; r7
+         ; r6
+         ; r5             x
+         ; r4
+         ; r3
+         ; r2
+         ; r1                      
+         ; r0
+         ;
+         ; if we want to lit the led at r5,c3 we have to initialize
+         ; r16 = 00100000 and r17 = 00001000 and call this routine.
+         ; We cannot, however lit up the leds at r5/c3, r3/c5 (as an example) only
+         ; because this will lit up the leds at r5/c5 and r3/c3 as well.  To avoid this
+         ; we should call this routine for each row/column seperately and put it in a loop.
+         
+          ledMatrix8x8Led:
+C:000031 2f21          mov     r18,r17
+C:000032 9520          com     r18                 ;invert bits
+C:000033 2f32          mov     r19,r18             ;r19 = r18
+C:000034 9526          lsr     r18
+C:000035 9526          lsr     r18
+C:000036 e0a3          ldi     r26,0b00000011
+C:000037 233a          and     r19,r26
+C:000038 b90b          out     PORTD,r16           
+C:000039 b928          out     PORTC,r18           ;write r18 to PORTC
+C:00003a b935          out     PORTB,r19           ;write r19 to PORTB
+C:00003b 9508          ret                         ;r17 returns unchanged
+         
+         
+         ;Assembly code auto-generated by utility from Bret Mulvey
+         ;Delay 12 cycles : 750 ns at 16.0 MHz
+         ;http://darcy.rsgc.on.ca/ACES/TEI4M/AVRdelay.html
+          ledMatrix8x8Delay:
+             ;next values are chosen to make the impression that the leds
+             ;are ligth all together.
+C:00003c ef9f          ldi     r25, 255
+C:00003d e3ae          ldi     r26, 62
+          L2:
+C:00003e 959a          dec     r25
+C:00003f f7f1          brne    L2
+C:000040 95aa          dec     r26
+C:000041 f7e1          brne    L2
+C:000042 9508          ret
+             
+         ;Assembly code auto-generated by utility from Bret Mulvey
+         ;Delay 7 999 996 cycles : 499ms 999us 750 ns at 16.0 MHz
+         ;http://darcy.rsgc.on.ca/ACES/TEI4M/AVRdelay.html
+         
+          delay:
+C:000043 e269          ldi     r22, 41
+C:000044 e976          ldi     r23, 150
+C:000045 e78e          ldi     r24, 126
+C:000046 958a      L1: dec     r24
+C:000047 f7f1          brne    L1
+C:000048 957a          dec     r23
+C:000049 f7e1          brne    L1
+C:00004a 956a          dec     r22
+C:00004b f7d1          brne    L1
+C:00004c 9508          ret
+             
+          displayOn:
+             ;light up all leds
+C:00004d ef0f          ldi     r16,0b11111111
+C:00004e 2f10          mov     r17,r16
+C:00004f 940e 0031     call    ledMatrix8x8Led
+C:000051 9508          ret
+             
+          displayOff:
+             ;distinguish all leds
+C:000052 e000          ldi     r16,0b00000000
+C:000053 2f10          mov     r17,r16
+C:000054 940e 0031     call    ledMatrix8x8Led
+C:000056 9508          ret
+         
+         ;demo0 : blink entire led matrix
+          demo0:
+C:000057 e0f2          ldi     r31,2
+          demo0loop:
+C:000058 940e 004d     call    displayOn
+C:00005a 940e 0043     call    delay
+C:00005c 940e 0052     call    displayOff
+C:00005e 940e 0043     call    delay
+C:000060 95fa          dec     r31
+C:000061 f7b1          brne    demo0loop
+C:000062 9508          ret
+             
+         ;demo1 : loops through all leds and put them on and off
+          demo1:
+C:000063 e011          ldi     r17,0b00000001  ;r17 has columns
+C:000064 e090          ldi     r25,0b00000000  ;r25 column counter = 0
+          columnLoop1:    
+C:000065 e001          ldi     r16,0b00000001  ;r16 has rows
+C:000066 e040          ldi     r20,0b00000000  ;r20 row counter = 0    
+          rowLoop1:
+             ;light up led at r16/r17
+C:000067 940e 0031     call    ledMatrix8x8Led
+             ;wait a while, otherwise the display seems to light up all the leds at once
+C:000069 940e 0043     call    delay
+C:00006b 0f00          lsl     r16             ;shift left r16 to next row
+C:00006c 3000          cpi     r16,0           ;all rows done?
+C:00006d f7c9          brne    rowLoop1        ;still rows left
+C:00006e 0f11          lsl     r17             ;shift left columns
+C:00006f 3010          cpi     r17,0           ;all columns done
+C:000070 f7a1          brne    columnLoop1     ;still columns left
+C:000071 9508          ret
+         
+         ;demo2 : loops through all rows and put them on and off
+          demo2:
+C:000072 e001          ldi     r16,0b00000001  ;r16 has rows
+C:000073 e040          ldi     r20,0b00000000  ;r20 row counter = 0    
+          rowLoop2:
+             ;light up row r16
+C:000074 940e 0020     call    ledMatrix8x8Row
+             ;wait a while, otherwise the display seems to light up all the leds at once
+C:000076 940e 0043     call    delay
+C:000078 0f00          lsl     r16             ;shift left r16 to next row
+C:000079 3000          cpi     r16,0           ;all rows done?
+C:00007a f7c9          brne    rowLoop2        ;still rows left
+C:00007b 9508          ret
+         
+         ;demo3 : loops through all columns and put them on and off
+          demo3:
+C:00007c e001          ldi     r16,0b00000001
+          columnLoop2:
+             ;light up column r16
+C:00007d 940e 0025     call    ledMatrix8x8Column
+             ;wait a while, otherwise the display seems to light up all the leds at once
+C:00007f 940e 0043     call    delay
+C:000081 0f00          lsl     r16             ;shift left r16 to next row
+C:000082 3000          cpi     r16,0           ;all columns done?
+C:000083 f7c9          brne    columnLoop2     ;still rows left
+C:000084 9508          ret
+         
+         ;demo 4 : display a pattern
+         ; . . x . . . x .
+         ; x x x x x x x x
+         ; . . x . . . x .
+         ; . . x . . . x .
+         ; x x x x x x x x
+         ; . . x . . . x .
+         ; . . x . x . x x
+         ; . . x . . . x .
+          demo4:
+C:000085 e7fd          ldi     r31, 125
+C:000086 e0e4          ldi     r30, 4
+             ;the demo4code itself takes some time too so very accurate measuring
+             ;is not done for now.  The pattern stays for about 8 seconds.
+             
+          demo4loop:
+C:000087 940e 008e     call    demo4code
+C:000089 95fa          dec     r31
+C:00008a f7e1          brne    demo4loop
+C:00008b 95ea          dec     r30
+C:00008c f7d1          brne    demo4loop
+C:00008d 9508          ret
+             
+          demo4code:   
+C:00008e e408          ldi     r16,0b01001000      ;light 4the row
+C:00008f 940e 0020     call    ledMatrix8x8Row
+C:000091 940e 003c     call    ledMatrix8x8Delay
+C:000093 e404          ldi     r16,0b01000100      ;light 3th and 6th column
+C:000094 940e 0025     call    ledMatrix8x8Column
+C:000096 940e 003c     call    ledMatrix8x8Delay
+C:000098 e002          ldi     r16,0b00000010
+C:000099 e110          ldi     r17,0b00010000
+C:00009a 940e 0031     call    ledMatrix8x8Led
+C:00009c 940e 003c     call    ledMatrix8x8Delay
+C:00009e e402          ldi     r16,0b01000010
+C:00009f e910          ldi     r17,0b10010000
+C:0000a0 940e 0031     call    ledMatrix8x8Led
+C:0000a2 940e 003c     call    ledMatrix8x8Delay
+C:0000a4 e000          ldi     r16,0b00000000
+C:0000a5 e010          ldi     r17,0b00000000
+             
+C:0000a6 9508          ret
+
+
+Segment usage:
+   Code      :       167 words (334 bytes)
+   Data      :         0 bytes
+   EEPROM    :         0 bytes
+
+Assembly completed with no errors.
