@@ -3,8 +3,8 @@
 ;source:      https://ece-classes.usc.edu/ee459/library/plaintext.php?file=samples/AVR/at328-0s.S
 ;             https://ece-classes.usc.edu/ee459/library/plaintext.php?file=samples/AVR/at328-0.c
 ;             https://ece-classes.usc.edu/ee459/library/samples/AVR/Makefile-ATmega328P
-;remark:      This a cracked version of at328-0s.S
-;             The assembly source can be generated with Makefile disasm > at328-o.disasm
+;remark:      This a reversed engineered version of at328-0s.S
+;             The assembly source can be generated with Makefile disasm > at328-0.disasm
 ;             from the original-source directory.
 ;             The use of interrupts isn't a necessary one.  Because of the 'reversing' nature of 
 ;             this project I've kept it as it was.
