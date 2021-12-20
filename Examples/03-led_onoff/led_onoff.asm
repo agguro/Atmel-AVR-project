@@ -6,19 +6,23 @@
 ;nov 5, 2021 - agguro - no-license license
 
 .device ATmega328P
+
+.equ    DDRB = 0x04
+.equ    PORTB = 0x05
+
 .cseg
 .org 0x00
 
 start:
     ldi     r16,0b00100000 ;r16 = 0x20 PB5 as output
-    out     0x04,r16       ;r16 to DDRB (0x04) controls PORTB's in/out state.
+    out     DDRB,r16       ;r16 to DDRB (0x04) controls PORTB's in/out state.
     ;we can re-use the value 00100000 in r16 so
     ;turn led ON
-    out     0x05,r16       ;set PORTB with values from r16, pin 13 = high    
+    out     PORTB,r16       ;set PORTB with values from r16, pin 13 = high    
     call    delay           ;wait 1 secs
     ;turn led OFF
     ldi     r16,0b00000000  ;r16 = 0b00000000
-    out     0x05,r16        ;set PORTB with values from r16, pin 13 = low
+    out     PORTB,r16        ;set PORTB with values from r16, pin 13 = low
     
 loop:    
     jmp     loop
