@@ -6,16 +6,20 @@
 ;nov 5, 2021 - agguro - no-license license
 
 .device ATmega328P
+
+.equ    DDRB = 0x04
+.equ    PORTB = 0x05
+
 .cseg
 .org 0x00
 
-start:
+start:  
     ldi     r16,0b00100000  ;r16 = 0x20 PB5 as output
-    out     0x04,r16        ;r16 to DDRB (0x04) controls PORTB's in/out state.
+    out     DDRB,r16        ;r16 to DDRB (0x04) controls PORTB's in/out state.
     ldi     r22,0b00100000  ;to use as mask  
 loop:
     ;re-use r16 = 0x00100000 to set PB5 high (the famous pin 13 on Arduino Uno Rev3)
-    out     0x05,r16        ;set PORTB with values from r16, pin 13 = low
+    out     PORTB,r16        ;set PORTB with values from r16, pin 13 = low
     call    delay
     eor     r16,r22         ;toggle bit PB5
     rjmp    loop

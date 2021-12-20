@@ -1,5 +1,5 @@
 
-AVRA   Ver. 1.3.0 led_blink.asm Sun Nov 28 10:54:59 2021
+AVRA   Ver. 1.3.0 led_blink.asm Fri Dec 10 16:42:47 2021
 
 
          ;name:            led_blink.asm
@@ -10,16 +10,20 @@ AVRA   Ver. 1.3.0 led_blink.asm Sun Nov 28 10:54:59 2021
          ;nov 5, 2021 - agguro - no-license license
          
           .device ATmega328P
+         
+          .equ    DDRB = 0x04
+          .equ    PORTB = 0x05
+         
           .cseg
           .org 0x00
          
-          start:
+          start:  
 C:000000 e200          ldi     r16,0b00100000  ;r16 = 0x20 PB5 as output
-C:000001 b904          out     0x04,r16        ;r16 to DDRB (0x04) controls PORTB's in/out state.
+C:000001 b904          out     DDRB,r16        ;r16 to DDRB (0x04) controls PORTB's in/out state.
 C:000002 e260          ldi     r22,0b00100000  ;to use as mask  
           loop:
              ;re-use r16 = 0x00100000 to set PB5 high (the famous pin 13 on Arduino Uno Rev3)
-C:000003 b905          out     0x05,r16        ;set PORTB with values from r16, pin 13 = low
+C:000003 b905          out     PORTB,r16        ;set PORTB with values from r16, pin 13 = low
 C:000004 940e 0008     call    delay
 C:000006 2706          eor     r16,r22         ;toggle bit PB5
 C:000007 cffb          rjmp    loop
