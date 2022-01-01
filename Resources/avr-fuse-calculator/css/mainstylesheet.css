@@ -1,0 +1,164 @@
+﻿body
+{
+	font-family: Arial, Sans-Serif;
+	font-size: small;
+}
+
+div.chip_nav_div
+{
+	margin-top: 5px;
+	margin-left: 5px;
+	margin-bottom: 3px;
+	padding: 5px 5px 5px 10px;
+	border-width: 2px;
+	border-style: dotted;
+	border-color: Gray;
+	white-space: nowrap;
+}
+
+div.presetgroup_div
+{
+	margin-top: 5px;
+	margin-left: 5px;
+	margin-bottom: 3px;
+	padding: 5px 5px 5px 10px;
+	border-width: 2px;
+	border-color: Gray;
+	border-style: dotted;
+}
+
+div.byte_table_div
+{
+	margin-top: 5px;
+	margin-left: 5px;
+	padding: 5px 5px 5px 10px;
+	border-width: 2px;
+	border-color: Gray;
+	border-style: dotted;
+}
+
+div.help_div
+{
+	margin-top: 5px;
+	margin-left: 5px;
+	padding: 5px 5px 5px 10px;
+	border-width: 2px;
+	border-color: Gray;
+	border-style: dotted;
+}
+
+div.da_div_out
+{
+	padding: 5px 5px 5px 10px;
+	margin-left: auto;
+	margin-right: auto;
+	text-align: center;
+}
+
+div.da_div_in
+{
+	width: 365px;
+	height: 118px;
+	margin-left: auto;
+	margin-right: auto;
+	text-align: center;
+	border: solid 1px Gray;
+}
+
+
+table
+{
+	border-collapse: collapse;
+	width: 100%;
+}
+
+td.presetgroup_fuse_id_cell
+{
+	background-color: #CCCCCC;
+	padding-top: 5px;
+	padding-left: 5px;
+	padding-bottom: 5px;
+}
+
+td.presetgroup_spacer_cell
+{
+	background-color: #EEEEEE;
+	height: 5px;
+}
+
+td.preset_cell
+{
+	background-color: #EEEEEE;
+}
+
+td.dudecmd_bad_cell
+{
+	background-color: #FF8888;
+	color: Black;
+	padding-left:5px;
+}
+
+tr.dudecmd_row
+{
+	background-color: Black;
+	font-family: Courier New, Monospace;
+	color: White;
+}
+
+td.dudecmd_label_cell,td.dudecmd_cell,td.permalink_cell
+{
+	padding: 5px 5px 5px 5px;
+	white-space:nowrap;
+}
+
+td.byte_table_head_cell,td.permalink_cell
+{
+	background-color: #EEEEEE;
+	padding-top: 5px;
+	padding-left: 5px;
+	padding-bottom: 5px;
+}
+
+td.permalink_label_cell
+{
+	padding-top: 5px;
+	padding-left: 5px;
+	padding-bottom: 5px;
+}
+
+tr.byte_table_label_row,tr.byte_table_def_row,td.permalink_label_cell
+{
+	background-color: #DDDDDD;
+}
+
+td.byte_table_bit_cell,td.byte_table_label_cell,td.byte_table_def_label_cell,td.textbox_label_cell
+{
+	border-right: solid 2px Gray;
+}
+
+td.bit_checkbox_cell,td.byte_table_fuse_label_cell,td.byte_table_def_cell,td.byte_textbox_cell
+{
+	border-left: solid 1px Gray;
+}
+
+td.byte_table_fuse_label_cell,td.byte_table_label_cell,td.byte_table_def_label_cell,td.textbox_label_cell,td.byte_textbox_cell,td.permalink_label_cell,td.permalink_cell
+{
+	padding-left: 5px;
+}
+
+td.byte_table_bit_cell
+{
+	padding-left: 10px;
+}
+
+tr.byte_table_bit_row:hover
+{
+	background-color: #EEEEEE;
+}
+
+input.permalink_textbox
+{
+	width: 90%;
+	margin-left: auto;
+	margin-right: auto;
+}
