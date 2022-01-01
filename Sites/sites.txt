@@ -1,0 +1,32 @@
+Microchip.com:
+    
+    https://gallery.microchip.com/
+    
+AVR Assembly language tutorial:
+    
+    http://www.avr-asm-tutorial.net/avr_en/index.html
+    
+demo platform is based on an ATmega88 microcontroller.    
+    
+    http://www.linusakesson.net/scene/craft/
+    
+AVR Assembler tutorial:    
+    
+    https://www.instructables.com/Command-Line-Assembly-Language-Programming-for-Ard/
+    
+Learn Adafruit, whatever it may be but a nice resource:    
+    
+    https://learn.adafruit.com/
+    
+Collection of tutorials using AVR microcontrollers in both C and Assembly language put
+together by RJH - a computer science student at the University of Texas at Dallas.
+    
+    http://www.rjhcoding.com/
+    
+AVR Fuse calculator by Frank Zhao.
+    
+    https://eleccelerator.com/fusecalc/fusecalc.php
+    
+AVR Delay Calculator: Developed originally by Bret Mulvey. Register enhancement by T. Morland. (ACES '18)
+    
+    http://darcy.rsgc.on.ca/ACES/TEI4M/AVRdelay.html
