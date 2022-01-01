@@ -1,0 +1,16 @@
+source: https://reprap.org/wiki/SimulAVR
+
+; get all traceable gates
+
+simulavr -d attiny85 -o tracelist.txt
+
+; modify tracelist.txt to tracein.txt file with nano, vi or anyother text editor
+
+; run the program for a while when in a loop to create a trace.vcd file
+
+simulavr -d attiny85 -c vcd:tracelist.txt:trace.vcd -f 01-led_on/main.elf
+
+; observe, evaluate, check when which gate is 
+
+gtkwave trace.vcd
+
