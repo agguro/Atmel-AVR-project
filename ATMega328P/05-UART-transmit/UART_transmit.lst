@@ -1,0 +1,95 @@
+
+AVRA   Ver. 1.3.0 UART_transmit.asm Sat Nov  6 12:24:38 2021
+
+
+         ;name:            UART_transmit.asm
+         ;assemble:        avra UART_transmit.asm
+         ;flash:           avrdude -c arduino -p m328p -P /dev/ttyACM0 -b 115200 -U flash:w:UART_transmit.hex
+         ;description:     writes to the UART
+         ;                 the data can be viewed with Arduino serial monitor and serial plotter.
+         ;                 Another nice tool can be found here: https://github.com/mich-w/QtSerialMonitor
+         ;                 This tool you can keep running and connect and disconnect whenever you want.
+         ;                 One draw back is that we need to send an extra 0x0a to the UART otherwise it
+         ;                 doesn't show anything. (For the serial plotter we need to do this anyway).
+         ;inspir(at)ed from: http://www.rjhcoding.com/avr-asm-uart.php
+         ;nov 5, 2021 - agguro - no-license license
+         
+          .device ATmega328P
+          .cseg
+          .org 0x00
+         
+          .equ    baud = 9600
+          .equ    bps  = 16000000/16/baud-1
+         
+          start:
+C:000000 e607          ldi     r16,LOW(bps)                    ;load baud prescale
+C:000001 e010          ldi     r17,HIGH(bps)                   ;into r17:r16
+C:000002 940e 0013     call    UART_init
+             
+             ;say hello
+C:000004 e6e0          ldi     r30,LOW(2*message)              ;load Z pointer with
+C:000005 e0f0          ldi     r31,HIGH(2*message)             ;datastring address
+             
+C:000006 e306          ldi r16,0x36
+C:000007 940e 001e     call    UART_putc
+C:000009 e307          ldi r16,0x37
+C:00000a 940e 001e     call    UART_putc
+C:00000c e00a          ldi r16,0x0a
+C:00000d 940e 001e     call    UART_putc
+         
+             ;transmit a datastring
+             ;this is viewable is serial monitor as just the string.
+             ;In the serial plotter it is showed as 4 graphs.
+          loop:
+C:00000f e6ee          ldi     r30,LOW(2*datastring)           ;load Z pointer with
+C:000010 e0f0          ldi     r31,HIGH(2*datastring)          ;datastring address
+C:000011 d013          rcall   UART_puts                       ;transmit string
+         
+C:000012 cffc          rjmp loop
+         
+         ;initialize UART with LOW(bps) in r16 and HIGH(bps) in r17.
+         ;bps = cpuFrequency/16/baud-1
+          UART_init:
+C:000013 9300 00c4     sts     0xc4,r16                        ;load baud prescale
+C:000015 9310 00c5     sts     0xc5,r17                        ;to UBRR0
+C:000017 e108          ldi     r16,(1<<0x03)|(1<<0x04)         ;enable transmitter
+C:000018 9300 00c1     sts     0xc1,r16                        ;and receiver
+C:00001a e00e          ldi     r16,0b00001110                  ;set frame format to async, no parity, 8 data bits and 1 stop bit
+C:00001b 9300 00c2     sts     0xc2,r16
+C:00001d 9508          ret
+         
+         ;send a byte in r16 to the UART
+          UART_putc:
+C:00001e 9110 00c0     lds     r17,0xc0                        ;load UCSR0A into r17
+C:000020 ff15          sbrs    r17,0x05                        ;wait for empty transmit buffer
+C:000021 cffc          rjmp    UART_putc                       ;repeat loop
+C:000022 9300 00c6     sts     0xc6,r16                        ;transmit character
+C:000024 9508          ret                                     ;return from subroutine
+         
+         ;send a zero terminated string to the UART
+         ;Program Memory address of string to transmit is in r30:r31 (ZH:ZL)
+          UART_puts:
+C:000025 9105          lpm     r16,Z+                          ;load character from pmem
+C:000026 3000          cpi     r16,$00                         ;check if null
+C:000027 f039          breq    UART_puts_end                   ;branch if null
+          UART_puts_wait:
+C:000028 9110 00c0     lds     r17,0xc0                        ;load UCSR0A into r17
+C:00002a ff15          sbrs    r17,0x05                        ;wait for empty transmit buffer
+C:00002b cffc          rjmp    UART_puts_wait                  ;repeat loop
+C:00002c 9300 00c6     sts     0xc6,r16                        ;transmit character
+C:00002e cff6          rjmp    UART_puts                       ;repeat loop
+          UART_puts_end:
+C:00002f 9508          ret
+         
+          message:    .db "Hello world.",0x0a,0x00    
+C:000030 48656C6C6F20776F726C642E0A00
+          datastring: .db "100 200 300 400 500",0x0a,0x00
+C:000037 313030203230302033303020343030203530300A0000 ; zero byte added
+
+
+Segment usage:
+   Code      :        66 words (132 bytes)
+   Data      :         0 bytes
+   EEPROM    :         0 bytes
+
+Assembly completed with no errors.
